@@ -72,8 +72,8 @@ class PdfActivity : AppCompatActivity() {
         var startX = 30f
         var startY = 30f
         var lineSpacing = 7f
-        val endMargin = 30f
-        val startMargin = 30f
+        var endMargin = 30f
+        var startMargin = 30f
         writeText(
             title = title,
             canvas = canvas,
@@ -282,6 +282,151 @@ class PdfActivity : AppCompatActivity() {
             typeface = Typeface.create(Typeface.DEFAULT,Typeface.BOLD)
         )
 
+        //symptoms
+        message = "Symptoms :"
+        startY = 170f
+        startX = 30f
+        lineSpacing = 10f
+        title.textSize = 10f
+        writeText(
+            title,
+            canvas,
+            textSize = 10f,
+            startX,
+            startY,
+            textColor = R.color.gray,
+            message,
+            Typeface.create(Typeface.DEFAULT,Typeface.BOLD)
+        )
+
+        //symptoms list bg color box
+        startY = 180f
+        var boxBottom = startY + (5* lineSpacing)
+        var boxWidth = (pageInfo.pageWidth.toFloat() / 2) - 30f - 15f // 30f form start 15 form end
+        bgPaint = Paint()
+        bgPaint.color = getColor(R.color.light_gray)
+        canvas.drawRect(30f,startY, (pageInfo.pageWidth.toFloat()/2) - 15f,boxBottom,bgPaint)
+
+        //symptoms list
+        //startY = startY + lineSpacing
+        message = "This is a sample paragraph that needs to fit inside the colored box. " +
+                "The text should wrap automatically and not overflow beyond the boundaries of the box."
+        paragraphInBox(
+            message = message,
+            title = title,
+            canvas = canvas,
+            boxWidth = boxWidth - (2*lineSpacing),
+            yCor = 190f,
+            lineSpacing = lineSpacing,
+            boxBottom = boxBottom,
+            startX = startX + lineSpacing
+        )
+
+//        val lines = mutableListOf<String>()
+//        var remainingText = message
+//        while (remainingText.isNotEmpty()) {
+//            // Measure the text to fit within the box width
+//            var breakIndex = title.breakText(remainingText, true, boxWidth - (2*lineSpacing), null)
+//            lines.add(remainingText.substring(0, breakIndex))
+//            remainingText = remainingText.substring(breakIndex)
+//        }
+//
+//        var currentY = 190f
+//        for (line in lines) {
+//            if (currentY + lineSpacing > boxBottom) break // Stop if the text exceeds the box height
+//            canvas.drawText(line,  startX + 10f, currentY, title) // Add small padding inside the box
+//            currentY += lineSpacing
+//        }
+
+        // Define table data
+        var headers = listOf("Basic Health Parameters", "Normal Value", "Text Value", "Unit", "Status")
+        var tableData = listOf(
+            listOf("BMI", "30", "128", "kg/m2", "Pre diabetic"),
+            listOf("Blood Pressure", "120/80", "128/84", "mmHg", "Normal"),
+            listOf("Pulse Rate", "60-100", "72", "BMP", "Normal"),
+            listOf("SPO2", "92", "180", "%", "High"),
+            listOf("Body Temperature", "98.6", "101", "℉", "High")
+        )
+
+        // Table layout configuration
+        startX = 30f  // Left margin
+        startY = 250f // Top margin
+        val columnWidths = listOf(170f, 120f, 100f, 80f, 80f) //column width
+        val rowHeight = 15f // Row height
+
+        //basics health parameters table
+        table(
+            title = title,
+            canvas = canvas,
+            headers = headers,
+            tableData = tableData,
+            columnWidths = columnWidths,
+            startX = startX,
+            startY = startY,
+            rowHeight = rowHeight
+        )
+
+        //basic blood test
+        headers = listOf("Basic Blood Test", "Normal Value", "Text Value", "Unit", "Status")
+        tableData = listOf(
+            listOf("Blood Sugar", "310", "168", "mg/ml", "Pre diabetic"),
+            listOf("Hemoglobin", "13.2 - 16.6", "120-80", "mg/ml", "Normal"),
+            listOf("Body Cholesterol", "> 200", "100", "g/dl", "Normal"),
+            listOf("Uric Acid", "3.5 - 7.2", "100", "mg/dl", "High")
+        )
+
+        startX = 30f  // Left margin
+        startY = 350f // Top margin
+
+        table(
+            title,
+            canvas,
+            headers,
+            tableData,
+            columnWidths,
+            startX,
+            startY,
+            rowHeight
+        )
+
+        //not text
+        startY = 645f
+        writeText(
+            title,
+            canvas,
+            textSize = 10f,
+            xCor = 30f,
+            yCor = startY,
+            textColor = R.color.black,
+            message = "Note",
+            typeface = Typeface.create(Typeface.DEFAULT,Typeface.BOLD)
+        )
+
+
+        //note box
+        startY = 650f
+        boxBottom = startY + (5* lineSpacing)
+        boxWidth = pageInfo.pageWidth.toFloat() // 30f form start 15 form end
+        bgPaint = Paint()
+        bgPaint.color = getColor(R.color.light_gray)
+        canvas.drawRect(0f,startY, boxWidth,boxBottom,bgPaint)
+
+
+
+        //signature
+        startY = 740f
+        writeText(
+            title,
+            canvas,
+            textSize = 10f,
+            xCor = 30f,
+            yCor = startY,
+            textColor = R.color.gray,
+            message = "Signature ...............................................................",
+            typeface = Typeface.create(Typeface.DEFAULT,Typeface.BOLD)
+        )
+
+
 
         //finish our page
         pdfDocument.finishPage(myPage)
@@ -320,5 +465,64 @@ class PdfActivity : AppCompatActivity() {
         title.textSize = textSize
         title.color = ContextCompat.getColor(this,textColor)
         canvas.drawText(message,xCor,yCor,title)
+    }
+
+    private fun paragraphInBox(
+        message : String,
+        title: Paint,
+        canvas: Canvas,
+        boxWidth : Float,
+        yCor : Float,
+        lineSpacing : Float,
+        boxBottom : Float,
+        startX : Float
+    ) {
+        var currentY = yCor
+        val lines = mutableListOf<String>()
+        var remainingText = message
+        while (remainingText.isNotEmpty()) {
+            // Measure the text to fit within the box width
+            var breakIndex = title.breakText(remainingText, true, boxWidth , null)
+            lines.add(remainingText.substring(0, breakIndex))
+            remainingText = remainingText.substring(breakIndex)
+        }
+
+        for (line in lines) {
+            if (currentY + lineSpacing > boxBottom) break // Stop if the text exceeds the box height
+            canvas.drawText(line,  startX, currentY, title) // Add small padding inside the box
+            currentY += lineSpacing
+        }
+    }
+
+    private fun table(
+        title: Paint,
+        canvas: Canvas,
+        headers : List<String>,
+        tableData : List<List<String>>,
+        columnWidths : List<Float>,
+        startX : Float,
+        startY : Float,
+        rowHeight : Float
+    ) {
+        var currentY = startY
+
+        // Draw headers
+        title.color = getColor(R.color.black)
+        title.typeface = Typeface.create(Typeface.DEFAULT,Typeface.BOLD)
+        for (i in headers.indices) {
+            val textX = startX + columnWidths.take(i).sum() // Calculate the starting X for each column
+            canvas.drawText(headers[i], textX, currentY, title)
+        }
+
+        // Draw rows
+        title.typeface = Typeface.create(Typeface.DEFAULT,Typeface.NORMAL)
+        currentY += rowHeight // Move to the next row
+        for (row in tableData) {
+            for (i in row.indices) {
+                val textX = startX + columnWidths.take(i).sum() // Calculate the starting X for each column
+                canvas.drawText(row[i], textX, currentY, title)
+            }
+            currentY += rowHeight // Move to the next row
+        }
     }
 }
